@@ -1,5 +1,6 @@
 import express from "express";
 import path from "path";
+import compression from "compression";
 import { createServer as createViteServer } from "vite";
 import { requireAuth, AuthRequest } from "./src/middleware/auth.ts";
 import { getOrCreateUser } from "./src/db/users.ts";
@@ -12,6 +13,8 @@ async function startServer() {
   const app = express();
   const PORT = 3000;
 
+  // Middleware
+  app.use(compression());
   app.use(express.json());
 
   // API Routes

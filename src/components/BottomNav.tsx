@@ -1,7 +1,8 @@
 import { Link, useLocation } from "react-router-dom";
 import { Home, Book, Layers, User } from "lucide-react";
+import { memo } from "react";
 
-export function BottomNav() {
+export const BottomNav = memo(function BottomNav() {
   const location = useLocation();
   const currentPath = location.pathname;
 
@@ -33,4 +34,4 @@ export function BottomNav() {
       </div>
     </div>
   );
-}
+});

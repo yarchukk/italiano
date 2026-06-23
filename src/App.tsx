@@ -1,12 +1,20 @@
-import { ReactNode } from "react";
+import { ReactNode, lazy, Suspense } from "react";
 import { BrowserRouter as Router, Routes, Route, Navigate } from "react-router-dom";
 import { Loader2 } from "lucide-react";
 import { AuthProvider, useAuth } from "./lib/authContext";
-import Home from "./views/Home";
-import Vocabulary from "./views/Vocabulary";
-import Phrases from "./views/Phrases";
-import Profile from "./views/Profile";
 import { BottomNav } from "./components/BottomNav";
+
+// Lazy load route components
+const Home = lazy(() => import("./views/Home"));
+const Vocabulary = lazy(() => import("./views/Vocabulary"));
+const Phrases = lazy(() => import("./views/Phrases"));
+const Profile = lazy(() => import("./views/Profile"));
+
+const LoadingFallback = () => (
+  <div className="min-h-screen flex items-center justify-center bg-slate-50 dark:bg-slate-950">
+    <Loader2 className="w-8 h-8 animate-spin text-blue-500" />
+  </div>
+);
 
 // Компонент для захищених маршрутів
 function PrivateRoute({ children }: { children: ReactNode }) {
@@ -46,33 +54,41 @@ export default function App() {
               <Route
                 path="/"
                 element={
-                  <PrivateRoute>
-                    <Home />
-                  </PrivateRoute>
+                  <Suspense fallback={<LoadingFallback />}>
+                    <PrivateRoute>
+                      <Home />
+                    </PrivateRoute>
+                  </Suspense>
                 }
               />
               <Route
                 path="/vocabulary"
                 element={
-                  <PrivateRoute>
-                    <Vocabulary />
-                  </PrivateRoute>
+                  <Suspense fallback={<LoadingFallback />}>
+                    <PrivateRoute>
+                      <Vocabulary />
+                    </PrivateRoute>
+                  </Suspense>
                 }
               />
               <Route
                 path="/phrases"
                 element={
-                  <PrivateRoute>
-                    <Phrases />
-                  </PrivateRoute>
+                  <Suspense fallback={<LoadingFallback />}>
+                    <PrivateRoute>
+                      <Phrases />
+                    </PrivateRoute>
+                  </Suspense>
                 }
               />
               <Route
                 path="/profile"
                 element={
-                  <PrivateRoute>
-                    <Profile />
-                  </PrivateRoute>
+                  <Suspense fallback={<LoadingFallback />}>
+                    <PrivateRoute>
+                      <Profile />
+                    </PrivateRoute>
+                  </Suspense>
                 }
               />
               {/* Перенаправлення на головну, якщо маршрут не знайдено */}

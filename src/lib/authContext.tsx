@@ -32,7 +32,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       
       const tgUser = tg.initDataUnsafe?.user;
       const rawInitData = tg.initData;
-
+      
       if (tgUser && rawInitData) {
         setUser(tgUser);
         setInitData(rawInitData);
@@ -50,9 +50,11 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     
     setLoading(false);
   }, []);
-
+    const getToken = () => {
+  return initData; // Повертаємо raw initData як токен
+};
   return (
-    <AuthContext.Provider value={{ user, loading, initData }}>
+    <AuthContext.Provider value={{ user, loading, initData, getToken }}>
       {children}
     </AuthContext.Provider>
   );

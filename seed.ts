@@ -1,5 +1,6 @@
-import { db } from "./src/db/index.ts";
-import { vocabulary, phrases } from "./src/db/schema.ts";
+import 'dotenv/config'; // <-- ДОДАЙ ЦЕ ПЕРШИМ РЯДКОМ
+import { db } from "./src/db/index"; // Переконайся, що шлях правильний
+import { vocabulary, phrases } from "./src/db/schema";
 
 async function seed() {
   console.log("Seeding database...");

@@ -1,9 +1,12 @@
-@import "tailwindcss";
+/* Додай це в src/index.css */
+:root {
+  --tg-theme-bg-color: #ffffff;
+  --tg-theme-text-color: #000000;
+  --tg-theme-button-color: #2481cc;
+  --tg-theme-button-text-color: #ffffff;
+}
 
-@layer base {
-  html, body {
-    height: 100%;
-    margin: 0;
-    font-family: 'Helvetica Neue', Arial, sans-serif;
-  }
+body {
+  background-color: var(--tg-theme-bg-color);
+  color: var(--tg-theme-text-color);
 }

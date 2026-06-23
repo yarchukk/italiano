@@ -1,89 +1,61 @@
 import { createContext, useContext, useEffect, useState, ReactNode } from "react";
-import { onAuthStateChanged, User, signInWithPopup } from "firebase/auth";
-import { auth, googleAuthProvider } from "./firebase";
 
-interface AppUser {
-  uid: string;
-  email: string | null;
-  firstName: string | null;
-  username: string | null;
-  xp: number;
-  streak: number;
+// Додаємо типізацію для об'єкта Telegram (щоб TypeScript не сварився)
+declare global {
+  interface Window {
+    Telegram?: any;
+  }
 }
 
 interface AuthContextType {
-  firebaseUser: User | null;
-  dbUser: AppUser | null;
+  user: any | null;
   loading: boolean;
-  signIn: () => Promise<void>;
-  signOut: () => Promise<void>;
-  getToken: () => Promise<string | null>;
+  initData: string | null;
 }
 
-const AuthContext = createContext<AuthContextType | undefined>(undefined);
+const AuthContext = createContext<AuthContextType>({
+  user: null,
+  loading: true,
+  initData: null,
+});
 
 export function AuthProvider({ children }: { children: ReactNode }) {
-  const [firebaseUser, setFirebaseUser] = useState<User | null>(null);
-  const [dbUser, setDbUser] = useState<AppUser | null>(null);
+  const [user, setUser] = useState<any | null>(null);
   const [loading, setLoading] = useState(true);
-
-  const fetchDbUser = async (user: User) => {
-    try {
-      const token = await user.getIdToken();
-      
-      const res = await fetch("/api/auth/sync", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          Authorization: `Bearer ${token}`
-        }
-      });
-      if (res.ok) {
-        const data = await res.json();
-        setDbUser(data.user);
-      }
-    } catch (e) {
-      console.error("Failed to sync user", e);
-    }
-  };
+  const [initData, setInitData] = useState<string | null>(null);
 
   useEffect(() => {
-    const unsub = onAuthStateChanged(auth, async (user) => {
-      setFirebaseUser(user);
-      if (user) {
-        await fetchDbUser(user);
-      } else {
-        setDbUser(null);
+    const tg = window.Telegram?.WebApp;
+    
+    if (tg) {
+      tg.ready(); // Повідомляємо Telegram, що апка готова
+      
+      const tgUser = tg.initDataUnsafe?.user;
+      const rawInitData = tg.initData;
+
+      if (tgUser && rawInitData) {
+        setUser(tgUser);
+        setInitData(rawInitData);
+        
+        // Синхронізуємо користувача з твоїм бекендом
+        fetch('/api/auth/sync', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${rawInitData}` // Передаємо initData на бекенд
+          }
+        }).catch(err => console.error("Помилка синхронізації:", err));
       }
-      setLoading(false);
-    });
-    return unsub;
+    }
+    
+    setLoading(false);
   }, []);
 
-  const signIn = async () => {
-    await signInWithPopup(auth, googleAuthProvider);
-  };
-
-  const signOut = async () => {
-    await auth.signOut();
-  };
-
-  const getToken = async () => {
-    if (firebaseUser) {
-      return await firebaseUser.getIdToken();
-    }
-    return null;
-  };
-
   return (
-    <AuthContext.Provider value={{ firebaseUser, dbUser, loading, signIn, signOut, getToken }}>
+    <AuthContext.Provider value={{ user, loading, initData }}>
       {children}
     </AuthContext.Provider>
   );
 }
 
-export function useAuth() {
-  const ctx = useContext(AuthContext);
-  if (!ctx) throw new Error("useAuth must be used within AuthProvider");
-  return ctx;
-}
+export const useAuth = () => useContext(AuthContext);

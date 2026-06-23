@@ -7,6 +7,7 @@ import { db } from "./src/db/index.ts";
 import { vocabulary, phrases, lessons, progress, favorites } from "./src/db/schema.ts";
 import { eq, and } from "drizzle-orm";
 
+
 async function startServer() {
   const app = express();
   const PORT = 3000;
@@ -16,16 +17,20 @@ async function startServer() {
   // API Routes
   
   // Login / Sync User Profile
-  app.post("/api/auth/sync", requireAuth, async (req: AuthRequest, res) => {
-    try {
-      const { email, name } = req.user!;
-      const user = await getOrCreateUser(req.user!.uid, email || '', name, undefined);
-      res.json({ user });
-    } catch (error: any) {
-      console.error("Sync user error:", error);
-      res.status(500).json({ error: error.message });
-    }
-  });
+ app.post("/api/auth/sync", requireAuth, async (req: AuthRequest, res) => {
+  try {
+    const { uid, email, name, username } = req.user!;
+    
+    // Використовуємо функцію getOrCreateUser для запису в БД
+    // (переконайся, що функція getOrCreateUser в src/db/users.ts очікує ці параметри)
+    const user = await getOrCreateUser(uid, email, name, username);
+    
+    res.json({ user });
+  } catch (error: any) {
+    console.error("Помилка синхронізації користувача:", error);
+    res.status(500).json({ error: error.message });
+  }
+});
 
   // Get User Profile
   app.get("/api/user", requireAuth, async (req: AuthRequest, res) => {
